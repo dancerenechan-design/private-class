@@ -8,7 +8,9 @@ import {
   updateDoc,
   addDoc,
   getDoc,
+  setDoc,
   onSnapshot,
+  runTransaction,
 } from "./firebase.js";
 
 const CLASS_CAPACITY = 6;
@@ -134,24 +136,73 @@ async function clearSeat(classId, index) {
     return;
   }
 
-  const target = classCache.find((x) => x.id === classId);
-  if (!target) {
-    return;
-  }
+  const classRef = doc(db, "classes", classId);
+  let removedName = "";
+  let promotedName = "";
+  let promotedPin = "";
+  let promotedSeatIndex = -1;
 
-  const seats = Array.isArray(target.seats) ? [...target.seats] : Array(CLASS_CAPACITY).fill(null);
-  const removedName = seats[index]?.name || "";
-  seats[index] = null;
+  await runTransaction(db, async (transaction) => {
+    const snap = await transaction.get(classRef);
+    if (!snap.exists()) return;
+    const data = snap.data();
 
-  await updateDoc(doc(db, "classes", classId), {
-    seats,
-    updatedAt: Date.now(),
+    const seats = Array.isArray(data.seats) ? [...data.seats] : Array(CLASS_CAPACITY).fill(null);
+    const waitlist = Array.isArray(data.waitlist) ? [...data.waitlist].filter(Boolean) : [];
+
+    removedName = seats[index]?.name || "";
+    seats[index] = null;
+
+    // Compact seats and promote from waitlist if any
+    const compacted = [...seats.filter(Boolean), ...Array(CLASS_CAPACITY).fill(null)].slice(0, CLASS_CAPACITY);
+    if (waitlist.length > 0) {
+      const next = waitlist.shift();
+      promotedName = next.name;
+      promotedPin = next.pin || "";
+      const empty = compacted.findIndex((x) => !x);
+      if (empty >= 0) {
+        promotedSeatIndex = empty;
+        compacted[empty] = {
+          name: next.name,
+          pin: next.pin,
+          paymentMethod: "",
+          paymentDate: "",
+          fromWaitlistAt: Date.now(),
+          updatedAt: Date.now(),
+        };
+      }
+    }
+
+    transaction.update(classRef, {
+      seats: compacted,
+      waitlist,
+      updatedAt: Date.now(),
+    });
   });
+
+  // Migrate contact info from waitlist key to seat key for promoted student
+  if (promotedName && promotedSeatIndex >= 0 && promotedPin) {
+    try {
+      const waitlistDocId = buildPrivateContactDocId(classId, "waitlist", promotedPin);
+      const waitlistSnap = await getDoc(doc(db, "privateContacts", waitlistDocId));
+      if (waitlistSnap.exists()) {
+        const newDocId = buildPrivateContactDocId(classId, promotedSeatIndex, promotedPin);
+        await setDoc(doc(db, "privateContacts", newDocId), {
+          ...waitlistSnap.data(),
+          seatIndex: promotedSeatIndex,
+          updatedAt: Date.now(),
+        }, { merge: true });
+      }
+    } catch (e) {
+      console.error("遷移聯絡資料失敗", e);
+    }
+  }
 
   await logOperation("admin_remove_student", {
     classId,
     seatIndex: index,
     studentName: removedName,
+    promotedName,
   });
 }
 

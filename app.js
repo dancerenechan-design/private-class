@@ -245,6 +245,13 @@ async function getStoredPrivateContact(classId, seatIndex, studentName, pin) {
     return primarySnap.data().contactMethod || "";
   }
 
+  // Fallback: contact was stored while on waitlist
+  const waitlistId = buildPrivateContactDocId(classId, "waitlist", pin);
+  const waitlistSnap = await getDoc(doc(db, "privateContacts", waitlistId));
+  if (waitlistSnap.exists()) {
+    return waitlistSnap.data().contactMethod || "";
+  }
+
   const namePinId = buildLegacyNamePinDocId(classId, studentName, pin);
   const namePinSnap = await getDoc(doc(db, "privateContacts", namePinId));
   if (namePinSnap.exists()) {
@@ -778,6 +785,8 @@ async function cancelEntry(classId, type, index, confirmPin) {
   const classRef = doc(db, "classes", classId);
   let studentName = "";
   let promotedName = "";
+  let promotedPin = "";
+  let promotedSeatIndex = -1;
 
   await runTransaction(db, async (transaction) => {
     const snap = await transaction.get(classRef);
@@ -811,8 +820,10 @@ async function cancelEntry(classId, type, index, confirmPin) {
       if (waitlist.length > 0) {
         const next = waitlist.shift();
         promotedName = next.name;
+        promotedPin = next.pin || "";
         const empty = compacted.findIndex((x) => !x);
         if (empty >= 0) {
+          promotedSeatIndex = empty;
           compacted[empty] = {
             name: next.name,
             pin: next.pin,
@@ -849,6 +860,24 @@ async function cancelEntry(classId, type, index, confirmPin) {
   });
 
   if (type === "seat") {
+    // Migrate contact info from waitlist key to seat key for promoted student
+    if (promotedName && promotedSeatIndex >= 0 && promotedPin) {
+      try {
+        const waitlistDocId = buildPrivateContactDocId(classId, "waitlist", promotedPin);
+        const waitlistSnap = await getDoc(doc(db, "privateContacts", waitlistDocId));
+        if (waitlistSnap.exists()) {
+          const newDocId = buildPrivateContactDocId(classId, promotedSeatIndex, promotedPin);
+          await setDoc(doc(db, "privateContacts", newDocId), {
+            ...waitlistSnap.data(),
+            seatIndex: promotedSeatIndex,
+            updatedAt: Date.now(),
+          }, { merge: true });
+        }
+      } catch (e) {
+        console.error("遷移聯絡資料失敗", e);
+      }
+    }
+
     logOperation("student_cancel_booking", {
       classId,
       seatIndex: index,
