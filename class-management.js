@@ -270,12 +270,10 @@ function renderClassCard(item) {
       st.textContent = value.paymentMethod ? `付款方式：${value.paymentMethod}` : (value.status || "未填付款方式");
       seat.appendChild(st);
 
-      if (value.paymentDate) {
-        const dateDiv = document.createElement("div");
-        dateDiv.className = "status";
-        dateDiv.textContent = `付款日期：${value.paymentDate}`;
-        seat.appendChild(dateDiv);
-      }
+      const dateDiv = document.createElement("div");
+      dateDiv.className = "status";
+      dateDiv.textContent = `付款日期：${value.paymentDate || "未提供"}`;
+      seat.appendChild(dateDiv);
 
       const contactText = document.createElement("div");
       contactText.className = "status";

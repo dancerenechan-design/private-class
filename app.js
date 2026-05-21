@@ -412,12 +412,10 @@ function classCard(item) {
       status.textContent = formatSeatStatus(value);
       seat.appendChild(status);
 
-      if (value.paymentDate) {
-        const dateDiv = document.createElement("div");
-        dateDiv.className = "status";
-        dateDiv.textContent = `付款日期：${value.paymentDate}`;
-        seat.appendChild(dateDiv);
-      }
+      const dateDiv = document.createElement("div");
+      dateDiv.className = "status";
+      dateDiv.textContent = `付款日期：${value.paymentDate || "未提供"}`;
+      seat.appendChild(dateDiv);
 
       const btn = document.createElement("button");
       btn.className = "button secondary";
