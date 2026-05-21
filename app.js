@@ -272,8 +272,7 @@ function formatSeatStatus(seat) {
     return "未填付款方式";
   }
   if (seat.paymentMethod) {
-    const datePart = seat.paymentDate ? `（${seat.paymentDate}）` : "";
-    return `付款方式：${seat.paymentMethod}${datePart}`;
+    return `付款方式：${seat.paymentMethod}`;
   }
   return seat.status || "未填付款方式";
 }
@@ -404,6 +403,13 @@ function classCard(item) {
       status.className = "status";
       status.textContent = formatSeatStatus(value);
       seat.appendChild(status);
+
+      if (value.paymentDate) {
+        const dateDiv = document.createElement("div");
+        dateDiv.className = "status";
+        dateDiv.textContent = `付款日期：${value.paymentDate}`;
+        seat.appendChild(dateDiv);
+      }
 
       const btn = document.createElement("button");
       btn.className = "button secondary";

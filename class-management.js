@@ -216,9 +216,15 @@ function renderClassCard(item) {
 
       const st = document.createElement("div");
       st.className = "status";
-      const datePart = value.paymentDate ? `（${value.paymentDate}）` : "";
-      st.textContent = value.paymentMethod ? `付款方式：${value.paymentMethod}${datePart}` : (value.status || "未填付款方式");
+      st.textContent = value.paymentMethod ? `付款方式：${value.paymentMethod}` : (value.status || "未填付款方式");
       seat.appendChild(st);
+
+      if (value.paymentDate) {
+        const dateDiv = document.createElement("div");
+        dateDiv.className = "status";
+        dateDiv.textContent = `付款日期：${value.paymentDate}`;
+        seat.appendChild(dateDiv);
+      }
 
       const contactText = document.createElement("div");
       contactText.className = "status";
