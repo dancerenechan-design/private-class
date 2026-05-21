@@ -316,7 +316,7 @@ function renderClassCard(item) {
 
       const contactEl = document.createElement("div");
       contactEl.className = "status";
-      renderPrivateContact(item.id, `waitlist_${idx}`, entry.name || "", entry.pin || "", contactEl);
+      renderPrivateContact(item.id, "waitlist", entry.name || "", entry.pin || "", contactEl);
       row.appendChild(contactEl);
 
       waitGrid.appendChild(row);
