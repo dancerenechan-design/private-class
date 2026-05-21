@@ -59,12 +59,14 @@
       <label for="studentContact">聯絡方法（只供老師查閱）</label>
       <input id="studentContact" name="studentContact" maxlength="80" placeholder="例如: Wts: 9123456 或 ig: dancerence_chan 或 其他">
 
-      <label for="studentPaymentMethod">付款方式（未付款可留空）</label>
-      <input id="studentPaymentMethod" name="studentPaymentMethod" maxlength="60" placeholder="例如:FPS/Payme/Alipay/Cash">
+      <div id="signupPaymentWrap">
+        <label for="studentPaymentMethod">付款方式（未付款可留空）</label>
+        <input id="studentPaymentMethod" name="studentPaymentMethod" maxlength="60" placeholder="例如:FPS/Payme/Alipay/Cash">
 
-      <div class="payment-date-row">
-        <label for="studentPaymentDate">付款日期</label>
-        <input id="studentPaymentDate" name="studentPaymentDate" type="date">
+        <div class="payment-date-row">
+          <label for="studentPaymentDate">付款日期</label>
+          <input id="studentPaymentDate" name="studentPaymentDate" type="date">
+        </div>
       </div>
 
       <menu>

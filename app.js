@@ -27,6 +27,7 @@ const studentPinInput = document.getElementById("studentPin");
 const studentContactInput = document.getElementById("studentContact");
 const studentPaymentMethodInput = document.getElementById("studentPaymentMethod");
 const studentPaymentDateInput = document.getElementById("studentPaymentDate");
+const signupPaymentWrap = document.getElementById("signupPaymentWrap");
 
 const statusDialog = document.getElementById("statusDialog");
 const statusForm = document.getElementById("statusForm");
@@ -529,7 +530,8 @@ async function loadClassRules() {
 
 function openNameDialog(classId, seatIndex) {
   pendingSignupClassId = classId;
-  nameDialogTitle.textContent = seatIndex == null ? "加入等候名單" : `報名名額 ${seatIndex + 1}`;
+  const isWaitlist = seatIndex == null;
+  nameDialogTitle.textContent = isWaitlist ? "加入等候名單" : `報名名額 ${seatIndex + 1}`;
   studentNameInput.value = "";
   studentPinInput.value = "";
   if (studentContactInput) {
@@ -540,6 +542,9 @@ function openNameDialog(classId, seatIndex) {
   }
   if (studentPaymentDateInput) {
     studentPaymentDateInput.value = "";
+  }
+  if (signupPaymentWrap) {
+    signupPaymentWrap.classList.toggle("hidden", isWaitlist);
   }
   nameDialog.showModal();
 }

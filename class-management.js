@@ -245,6 +245,34 @@ function renderClassCard(item) {
   }
   card.appendChild(seatGrid);
 
+  const waitlist = Array.isArray(item.waitlist) ? item.waitlist.filter(Boolean) : [];
+  if (waitlist.length > 0) {
+    const waitTitle = document.createElement("p");
+    waitTitle.className = "meta";
+    waitTitle.textContent = `等候名單（${waitlist.length} 人）`;
+    card.appendChild(waitTitle);
+
+    const waitGrid = document.createElement("div");
+    waitGrid.className = "stack";
+    waitlist.forEach((entry, idx) => {
+      const row = document.createElement("div");
+      row.className = "seat";
+
+      const n = document.createElement("div");
+      n.className = "name";
+      n.textContent = `等 ${idx + 1}. ${entry.name}`;
+      row.appendChild(n);
+
+      const contactEl = document.createElement("div");
+      contactEl.className = "status";
+      renderPrivateContact(item.id, `waitlist_${idx}`, entry.name || "", entry.pin || "", contactEl);
+      row.appendChild(contactEl);
+
+      waitGrid.appendChild(row);
+    });
+    card.appendChild(waitGrid);
+  }
+
   const actions = document.createElement("div");
   actions.className = "inline-buttons";
 
