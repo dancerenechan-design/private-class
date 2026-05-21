@@ -216,7 +216,8 @@ function renderClassCard(item) {
 
       const st = document.createElement("div");
       st.className = "status";
-      st.textContent = value.paymentMethod ? `付款方式：${value.paymentMethod}` : (value.status || "未填付款方式");
+      const datePart = value.paymentDate ? `（${value.paymentDate}）` : "";
+      st.textContent = value.paymentMethod ? `付款方式：${value.paymentMethod}${datePart}` : (value.status || "未填付款方式");
       seat.appendChild(st);
 
       const contactText = document.createElement("div");

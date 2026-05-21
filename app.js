@@ -272,7 +272,8 @@ function formatSeatStatus(seat) {
     return "未填付款方式";
   }
   if (seat.paymentMethod) {
-    return `付款方式：${seat.paymentMethod}`;
+    const datePart = seat.paymentDate ? `（${seat.paymentDate}）` : "";
+    return `付款方式：${seat.paymentMethod}${datePart}`;
   }
   return seat.status || "未填付款方式";
 }
