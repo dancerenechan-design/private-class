@@ -18,6 +18,8 @@ const searchDateInput = document.getElementById("searchDate");
 const clearSearchDateBtn = document.getElementById("clearSearchDate");
 const classRulesContent = document.getElementById("classRulesContent");
 const classRulesUpdatedAt = document.getElementById("classRulesUpdatedAt");
+const paymeSection = document.getElementById("paymeSection");
+const paymeLinksEl = document.getElementById("paymeLinks");
 
 const nameDialog = document.getElementById("nameDialog");
 const nameForm = document.getElementById("nameForm");
@@ -167,6 +169,15 @@ function parseClassDateTime(classItem) {
   return new Date(date.year, date.month - 1, date.day, time.hour, time.minute, 0, 0);
 }
 
+function parseClassEndDateTime(classItem) {
+  const date = parseDateParts(classItem?.date);
+  if (!date) {
+    return new Date(NaN);
+  }
+  const time = parseTimeParts(classItem?.endTime);
+  return new Date(date.year, date.month - 1, date.day, time.hour, time.minute, 0, 0);
+}
+
 function isWithin24Hours(classItem) {
   const diff = parseClassDateTime(classItem).getTime() - Date.now();
   return diff > 0 && diff <= TWENTY_FOUR_HOURS_MS;
@@ -192,7 +203,7 @@ function getUpcoming(items) {
   today.setHours(0, 0, 0, 0);
   return items
     .filter((item) => {
-      const dt = parseClassDateTime(item);
+      const dt = parseClassEndDateTime(item);
       if (!Number.isNaN(dt.getTime())) {
         return dt >= now;
       }
@@ -503,9 +514,31 @@ async function loadClassRules() {
     onSnapshot(doc(db, "siteInfo", "classRules"), (snap) => {
       const content = snap.exists() ? snap.data().content : "";
       const updatedAt = snap.exists() ? snap.data().updatedAt : null;
+
       if (classRulesContent) {
         classRulesContent.textContent = content;
       }
+
+      // PayMe section
+      if (paymeSection) {
+        const links = Array.isArray(snap.exists() && snap.data().links) ? snap.data().links : [];
+        paymeSection.classList.toggle("hidden", links.length === 0);
+
+        if (paymeLinksEl) {
+          paymeLinksEl.innerHTML = "";
+          links.forEach((item) => {
+            if (!item.url) return;
+            const a = document.createElement("a");
+            a.href = item.url;
+            a.target = "_blank";
+            a.rel = "noopener noreferrer";
+            a.textContent = item.label || item.url;
+            a.style.display = "block";
+            paymeLinksEl.appendChild(a);
+          });
+        }
+      }
+
       if (classRulesUpdatedAt) {
         if (!updatedAt) {
           classRulesUpdatedAt.textContent = "";

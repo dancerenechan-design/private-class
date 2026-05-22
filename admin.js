@@ -31,6 +31,8 @@ const cancelEditBtn = document.getElementById("cancelEdit");
 
 const classRulesForm = document.getElementById("classRulesForm");
 const classRulesText = document.getElementById("classRulesText");
+const linkListEl = document.getElementById("linkList");
+const addLinkBtn = document.getElementById("addLinkBtn");
 const rulesStatus = document.getElementById("rulesStatus");
 
 const dateInput = document.getElementById("date");
@@ -278,14 +280,47 @@ logoutBtn.addEventListener("click", async () => {
   }
 });
 
+// ── Link list helpers ───────────────────────────────────────────
+function addLinkRow(urlValue = "", labelValue = "") {
+  const row = document.createElement("div");
+  row.className = "inline-buttons";
+  row.style.alignItems = "flex-start";
+
+  const labelInput = document.createElement("input");
+  labelInput.type = "text";
+  labelInput.placeholder = "顯示文字（如：PayMe 付款）";
+  labelInput.value = labelValue;
+  labelInput.style.flex = "0 0 160px";
+  labelInput.dataset.role = "linkLabel";
+
+  const urlInput = document.createElement("input");
+  urlInput.type = "url";
+  urlInput.placeholder = "連結 URL";
+  urlInput.value = urlValue;
+  urlInput.style.flex = "1";
+  urlInput.dataset.role = "linkUrl";
+
+  const removeBtn = document.createElement("button");
+  removeBtn.type = "button";
+  removeBtn.className = "button secondary";
+  removeBtn.textContent = "✕";
+  removeBtn.addEventListener("click", () => row.remove());
+
+  row.appendChild(labelInput);
+  row.appendChild(urlInput);
+  row.appendChild(removeBtn);
+  linkListEl.appendChild(row);
+}
+
+addLinkBtn.addEventListener("click", () => addLinkRow());
+
 async function loadClassRulesForEdit() {
   try {
     const snap = await getDoc(doc(db, "siteInfo", "classRules"));
-    if (snap.exists()) {
-      classRulesText.value = snap.data().content || "";
-    } else {
-      classRulesText.value = "";
-    }
+    const data = snap.exists() ? snap.data() : {};
+    classRulesText.value = data.content || "";
+    linkListEl.innerHTML = "";
+    (data.links || []).forEach((item) => addLinkRow(item.url || "", item.label || ""));
   } catch (error) {
     console.error("讀取課堂資訊失敗", error);
   }
@@ -301,8 +336,15 @@ classRulesForm.addEventListener("submit", async (event) => {
   try {
     rulesStatus.classList.add("hidden");
     const content = classRulesText.value.trim();
+
+    const linksData = [...linkListEl.children].map((row) => ({
+      label: row.querySelector("[data-role='linkLabel']")?.value.trim() || "",
+      url: row.querySelector("[data-role='linkUrl']")?.value.trim() || "",
+    })).filter((item) => item.url);
+
     await setDoc(doc(db, "siteInfo", "classRules"), {
       content,
+      links: linksData,
       updatedAt: Date.now(),
     }, { merge: true });
     rulesStatus.textContent = "課堂資訊已保存！";

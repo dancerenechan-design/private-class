@@ -40,6 +40,13 @@ const db = getFirestore(app);
 const auth = getAuth(app);
 setPersistence(auth, browserLocalPersistence);
 
+let storage = null;
+try {
+  storage = getStorage(app);
+} catch (e) {
+  console.warn("Firebase Storage 未啟用或初始化失敗", e);
+}
+
 export {
   auth,
   signInWithEmailAndPassword,
