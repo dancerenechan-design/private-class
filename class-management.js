@@ -167,6 +167,10 @@ function populateTimeOptions(hourEl, minuteEl) {
 
 function buildEditSongFields() {
   const selected = editLevelInputs.filter((x) => x.checked).map((x) => x.value);
+  const existing = {};
+  editSongFields.querySelectorAll("input[id^='editSong_']").forEach((input) => {
+    existing[input.id.replace("editSong_", "")] = input.value;
+  });
   editSongFields.innerHTML = "";
   if (selected.length === 0) {
     const notice = document.createElement("p");
@@ -185,6 +189,7 @@ function buildEditSongFields() {
     input.id = `editSong_${lv}`;
     input.maxLength = 100;
     input.required = true;
+    input.value = existing[lv] ?? "";
     wrap.appendChild(label);
     wrap.appendChild(input);
     editSongFields.appendChild(wrap);
