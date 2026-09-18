@@ -86,6 +86,10 @@ function logOperation(action, details) {
 
 function buildSongFields() {
   const current = selectedLevels();
+  const existing = {};
+  songFields.querySelectorAll("input[id^='song_']").forEach((input) => {
+    existing[input.id.replace("song_", "")] = input.value;
+  });
   songFields.innerHTML = "";
 
   current.forEach((lv) => {
@@ -100,6 +104,7 @@ function buildSongFields() {
     input.id = `song_${lv}`;
     input.maxLength = 100;
     input.required = true;
+    input.value = existing[lv] ?? "";
 
     wrap.appendChild(label);
     wrap.appendChild(input);
