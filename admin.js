@@ -15,7 +15,11 @@ import {
 } from "./firebase.js";
 
 const CLASS_CAPACITY = 6;
-const LEVELS = ["Lv0", "Lv1", "Lv2"];
+const LEVELS = ["Lv0", "Lv1", "Lv2", "OpenLv"];
+
+function levelDisplayName(lv) {
+  return lv === "OpenLv" ? "Open Lv" : lv;
+}
 
 const loginSection = document.getElementById("loginSection");
 const adminSection = document.getElementById("adminSection");
@@ -90,7 +94,7 @@ function buildSongFields() {
 
     const label = document.createElement("label");
     label.setAttribute("for", `song_${lv}`);
-    label.textContent = `${lv} 歌曲`;
+    label.textContent = `${levelDisplayName(lv)} 歌曲`;
 
     const input = document.createElement("input");
     input.id = `song_${lv}`;
