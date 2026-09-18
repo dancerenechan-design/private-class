@@ -341,11 +341,15 @@ async function clearSeat(classId, index) {
   let promotedName = "";
   let promotedPin = "";
   let promotedSeatIndex = -1;
+  let classHeader = "";
+  let classLevels = "";
 
   await runTransaction(db, async (transaction) => {
     const snap = await transaction.get(classRef);
     if (!snap.exists()) return;
     const data = snap.data();
+    classHeader = formatClassHeader(data.date, data.startTime, data.endTime);
+    classLevels = (data.levels || []).join(", ");
     const capacity = getCapacity(data);
 
     const seats = Array.isArray(data.seats) ? [...data.seats] : Array(capacity).fill(null);
@@ -404,6 +408,8 @@ async function clearSeat(classId, index) {
     seatIndex: index,
     studentName: removedName,
     promotedName,
+    classHeader,
+    levels: classLevels,
   });
 }
 

@@ -773,6 +773,8 @@ async function verifyStatusPinAndReveal() {
 async function updatePaymentMethod(classId, seatIndex, confirmPin, paymentMethod, paymentDate, contactMethod) {
   const classRef = doc(db, "classes", classId);
   let studentName = "";
+  let classHeader = "";
+  let classLevels = "";
 
   await runTransaction(db, async (transaction) => {
     const snap = await transaction.get(classRef);
@@ -798,6 +800,8 @@ async function updatePaymentMethod(classId, seatIndex, confirmPin, paymentMethod
     }
 
     studentName = seat.name;
+    classHeader = formatClassHeader(data.date, data.startTime, data.endTime);
+    classLevels = (data.levels || []).join(", ");
     seat.paymentMethod = paymentMethod;
     seat.paymentDate = paymentDate || "";
     seat.updatedAt = Date.now();
@@ -814,6 +818,8 @@ async function updatePaymentMethod(classId, seatIndex, confirmPin, paymentMethod
     seatIndex,
     studentName,
     paymentMethod,
+    classHeader,
+    levels: classLevels,
   }).catch((error) => console.error("寫入操作紀錄失敗", error));
 
   upsertPrivateContact(classId, seatIndex, studentName, confirmPin, contactMethod)
@@ -827,6 +833,8 @@ async function cancelEntry(classId, type, index, confirmPin) {
   let promotedName = "";
   let promotedPin = "";
   let promotedSeatIndex = -1;
+  let classHeader = "";
+  let classLevels = "";
 
   await runTransaction(db, async (transaction) => {
     const snap = await transaction.get(classRef);
@@ -839,6 +847,8 @@ async function cancelEntry(classId, type, index, confirmPin) {
       throw new Error("開班前 24 小時內不可取消報名或等候");
     }
 
+    classHeader = formatClassHeader(data.date, data.startTime, data.endTime);
+    classLevels = (data.levels || []).join(", ");
     const capacity = getCapacity(data);
     const seats = normalizeSeats(Array.isArray(data.seats) ? [...data.seats] : [], capacity);
     const waitlist = normalizeWaitlist(data.waitlist);
@@ -924,11 +934,15 @@ async function cancelEntry(classId, type, index, confirmPin) {
       seatIndex: index,
       studentName,
       promotedName,
+      classHeader,
+      levels: classLevels,
     }).catch((error) => console.error("寫入取消紀錄失敗", error));
     if (promotedName) {
       logOperation("student_promote_from_waitlist", {
         classId,
         studentName: promotedName,
+        classHeader,
+        levels: classLevels,
       }).catch((error) => console.error("寫入遞補紀錄失敗", error));
     }
     return;
@@ -938,6 +952,8 @@ async function cancelEntry(classId, type, index, confirmPin) {
     classId,
     waitlistIndex: index,
     studentName,
+    classHeader,
+    levels: classLevels,
   }).catch((error) => console.error("寫入取消等候紀錄失敗", error));
 }
 

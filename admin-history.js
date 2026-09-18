@@ -70,15 +70,25 @@ function formatDetailText(action, details) {
     const levelsInfo = details.levels ? ` ${details.levels}` : "";
     text = `學生: ${details.studentName || "--"} | 班期: ${classInfo}${levelsInfo}`;
   } else if (action === "student_update_status") {
-    text = `學生: ${details.studentName || "--"} | 付款方式: ${details.paymentMethod || "--"}`;
+    const classInfo = details.classHeader || details.classId || "--";
+    const levelsInfo = details.levels ? ` ${details.levels}` : "";
+    text = `學生: ${details.studentName || "--"} | 班期: ${classInfo}${levelsInfo} | 付款方式: ${details.paymentMethod || "--"}`;
   } else if (action === "student_cancel_booking") {
-    text = `學生: ${details.studentName || "--"}${details.promotedName ? ` | 已升位: ${details.promotedName}` : ""}`;
+    const classInfo = details.classHeader || details.classId || "--";
+    const levelsInfo = details.levels ? ` ${details.levels}` : "";
+    text = `學生: ${details.studentName || "--"} | 班期: ${classInfo}${levelsInfo}${details.promotedName ? ` | 已升位: ${details.promotedName}` : ""}`;
   } else if (action === "student_join_waitlist") {
-    text = `學生: ${details.studentName || "--"} | 等候位置: ${details.waitlistPosition || "--"}`;
+    const classInfo = details.classHeader || details.classId || "--";
+    const levelsInfo = details.levels ? ` ${details.levels}` : "";
+    text = `學生: ${details.studentName || "--"} | 班期: ${classInfo}${levelsInfo} | 等候位置: ${details.waitlistPosition || "--"}`;
   } else if (action === "student_cancel_waitlist") {
-    text = `學生: ${details.studentName || "--"}`;
+    const classInfo = details.classHeader || details.classId || "--";
+    const levelsInfo = details.levels ? ` ${details.levels}` : "";
+    text = `學生: ${details.studentName || "--"} | 班期: ${classInfo}${levelsInfo}`;
   } else if (action === "student_promote_from_waitlist") {
-    text = `學生: ${details.studentName || "--"}`;
+    const classInfo = details.classHeader || details.classId || "--";
+    const levelsInfo = details.levels ? ` ${details.levels}` : "";
+    text = `學生: ${details.studentName || "--"} | 班期: ${classInfo}${levelsInfo}`;
   } else if (action === "admin_create_class") {
     text = `班期: ${details.header || "--"}`;
   } else if (action === "admin_update_class") {
@@ -86,7 +96,9 @@ function formatDetailText(action, details) {
   } else if (action === "admin_delete_class") {
     text = `班期 ID: ${details.classId || "--"}`;
   } else if (action === "admin_remove_student") {
-    text = `學生: ${details.studentName || "--"} | 班期: ${details.classId || "--"}`;
+    const classInfo = details.classHeader || details.classId || "--";
+    const levelsInfo = details.levels ? ` ${details.levels}` : "";
+    text = `學生: ${details.studentName || "--"} | 班期: ${classInfo}${levelsInfo}${details.promotedName ? ` | 已升位: ${details.promotedName}` : ""}`;
   }
 
   return text;
